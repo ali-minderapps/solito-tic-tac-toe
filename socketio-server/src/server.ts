@@ -9,16 +9,16 @@ var app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-var PORT = 9000;
-
 app.get("/", function (req, res) {
   res.status(200).send("Hello world");
 });
 
 var server = http.createServer(app);
 
-server.listen(PORT, function () {
-  console.log("Server is running on PORT:", PORT);
+const port = process.env.PORT || 9000;
+
+server.listen(port, function () {
+  console.log("Server is running on PORT:", port);
 });
 
 socketServer(server);
