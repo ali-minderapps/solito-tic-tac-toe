@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node build/server.js",
+    "prebuild": "rimraf ./build",
     "build": "tsc",
     "develop": "nodemon server.ts",
     "deploy": "cd .. && git subtree push --prefix socketio-server heroku master && cd socketio-server",
@@ -13,6 +14,7 @@
   "dependencies": {
     "express": "~4.16.1",
     "reflect-metadata": "^0.1.13",
+    "rimraf": "^3.0.2",
     "socket-controllers": "^0.0.5",
     "socket.io": "^4.5.1"
   },
@@ -24,5 +26,6 @@
   },
   "engines": {
     "node": "17.x"
-  }
+  },
+  "heroku-run-build-script": true
 }
