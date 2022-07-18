@@ -17,6 +17,8 @@ export function NavigationProvider({
             screens: {
               home: '',
               'user-detail': 'user/:id',
+              'choose-mode': 'game/choose-mode',
+              multiplayer: 'game/multiplayer',
             },
           },
         }),

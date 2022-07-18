@@ -1,67 +1,52 @@
 import React from 'react'
-import { Text, View, H1, Pressable } from 'dripsy'
+import { Text, View, Pressable, styled, H2 } from 'dripsy'
 import { useRouter } from 'solito/router'
+import { Header } from '../../components/header'
+
+const Container = styled(View)({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '$background',
+})
+
+const Title = styled(H2)({
+  color: '$text',
+  fontWeight: '800',
+})
+
+const Button = styled(Pressable)({
+  height: 40,
+  width: 200,
+  borderWidth: '2px',
+  borderColor: '$primary',
+  borderRadius: 10,
+  margin: '10px',
+  justifyContent: 'center',
+  alignItems: 'center',
+})
+
+const ButtonTitle = styled(Text)({
+  fontSize: '$2',
+  color: '$text',
+  fontWeight: 'bold',
+})
 
 export function ChooseModeScreen() {
   const { push } = useRouter()
   return (
-    <View
-      sx={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#2E2E2E',
-      }}
-    >
-      <H1 sx={{ fontWeight: '800', color: '#fff' }}>Choose mode</H1>
-      <Pressable
-        sx={{
-          height: 40,
-          width: 200,
-          border: '2px solid #fff',
-          borderRadius: 10,
-          margin: '10px',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        onPress={() => push('/game/multiplayer')}
-      >
-        <Text sx={{ fontSize: 16, color: '#fff', fontWeight: 'bold' }}>
-          Multiplayer
-        </Text>
-      </Pressable>
-      <Pressable
-        sx={{
-          height: 40,
-          width: 200,
-          border: '2px solid #fff',
-          borderRadius: 10,
-          margin: '10px',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        onPress={() => push('/tic-tac-toe/room-id')}
-      >
-        <Text sx={{ fontSize: 16, color: '#fff', fontWeight: 'bold' }}>
-          Single Player
-        </Text>
-      </Pressable>
-      <Pressable
-        sx={{
-          height: 40,
-          width: 200,
-          border: '2px solid #fff',
-          borderRadius: 10,
-          margin: '10px',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        onPress={() => {}}
-      >
-        <Text sx={{ fontSize: 16, color: '#fff', fontWeight: 'bold' }}>
-          Offline
-        </Text>
-      </Pressable>
-    </View>
+    <Container>
+      <Header />
+      <Title>Choose mode</Title>
+      <Button onPress={() => push('/game/multiplayer')}>
+        <ButtonTitle>Multiplayer</ButtonTitle>
+      </Button>
+      <Button onPress={() => push('/tic-tac-toe/room-id')}>
+        <ButtonTitle>Single Player</ButtonTitle>
+      </Button>
+      <Button onPress={() => {}}>
+        <ButtonTitle>Offline</ButtonTitle>
+      </Button>
+    </Container>
   )
 }

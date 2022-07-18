@@ -1,5 +1,11 @@
 import React from 'react'
 
+type Score = {
+  x: number
+  tie: number
+  o: number
+}
+
 export interface IGameContextProps {
   isInRoom: boolean
   setInRoom: (inRoom: boolean) => void
@@ -9,12 +15,10 @@ export interface IGameContextProps {
   setPlayerTurn: (turn: boolean) => void
   isGameStarted: boolean
   setGameStarted: (started: boolean) => void
-  score: {
-    x: number
-    tie: number
-    o: number
-  }
-  setScore: () => void
+  score: Score
+  setScore: (score: Score) => void
+  gameResult: string
+  setGameResult: (result: string) => void
 }
 
 const defaultState: IGameContextProps = {
@@ -32,6 +36,8 @@ const defaultState: IGameContextProps = {
     o: 0,
   },
   setScore: () => {},
+  gameResult: '',
+  setGameResult: () => {},
 }
 
 export default React.createContext(defaultState)

@@ -1,21 +1,33 @@
-import { GameBoard } from 'app/components/game-board'
+import { GameBoard, initialMatrix } from 'app/components/game-board'
 import { JoinRoom } from 'app/components/join-room'
-import gameContext from 'app/context/gameContext'
-import { View } from 'dripsy'
+import gameContext from 'app/context/game-context'
+import { styled, View } from 'dripsy'
 import { useContext } from 'react'
+import { Header } from '../../components/header'
+import gameService from '../../services/gameService'
+import socketService from '../../services/socketService'
+
+const Container = styled(View)({
+  flex: 1,
+  backgroundColor: '$background',
+})
 
 export function MultiPlayerScreen() {
-  const { isInRoom } = useContext(gameContext)
+  const { isInRoom, gameResult, setGameResult } = useContext(gameContext)
+
+  const onRematch = () => {
+    console.log('onRematch')
+    if (socketService.socket) {
+      gameService.updateGame(socketService.socket, initialMatrix)
+      setGameResult('')
+    }
+  }
 
   return (
-    <View
-      sx={{
-        flex: 1,
-        backgroundColor: '#2E2E2E',
-      }}
-    >
+    <Container>
+      <Header {...(gameResult && { onRematch })} />
       {!isInRoom && <JoinRoom />}
       {isInRoom && <GameBoard />}
-    </View>
+    </Container>
   )
 }

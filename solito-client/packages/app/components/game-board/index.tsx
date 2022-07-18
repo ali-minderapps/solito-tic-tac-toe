@@ -1,10 +1,24 @@
-import gameContext from 'app/context/gameContext'
-import { checkGameState } from 'app/helpers'
+import gameContext from 'app/context/game-context'
+import { checkGameState, sleep } from 'app/helpers'
 import gameService from 'app/services/gameService'
 import socketService from 'app/services/socketService'
 import { IPlayMatrix } from 'app/types'
 import { View, Text, styled, Pressable, Row } from 'dripsy'
 import { useContext, useEffect, useState } from 'react'
+
+const Container = styled(View)({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+})
+
+const Board = styled(View)({
+  width: '100%',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginTop: '50px',
+  marginBottom: '50px',
+})
 
 const PlayStopper = styled(View)({
   width: '100%',
@@ -28,37 +42,37 @@ const Cell = styled(Pressable)((props: any) => ({
   alignItems: 'center',
   justifyContent: 'center',
   cursor: 'pointer',
-  borderColor: '#fff',
+  borderColor: '$primary',
   borderTopWidth: props.borderTop && '2px',
   borderBottomWidth: props.borderBottom && '2px',
   borderLeftWidth: props.borderLeft && '2px',
   borderRightWidth: props.borderRight && '2px',
 }))
 
-const X = styled(Text)({
+const Symbol = styled(Text)({
   fontSize: 100,
-  color: '#fff',
-})
-
-const O = styled(Text)({
-  fontSize: 100,
-  color: '#fff',
+  color: '$text',
 })
 
 const Title = styled(Text)((props: any) => ({
-  color: props.color ?? (props.disable ? '#999999' : '#fff'),
+  color: props.color ?? (props.disable ? '$textLight' : '$text'),
   fontWeight: '500',
   marginTop: '10px',
   fontSize: 20,
 }))
 
+const CenterView = styled(View)({
+  alignItems: 'center',
+})
+
+export const initialMatrix = [
+  [null, null, null],
+  [null, null, null],
+  [null, null, null],
+]
+
 export function GameBoard() {
-  const [gameResult, setGameResult] = useState('')
-  const [matrix, setMatrix] = useState<IPlayMatrix>([
-    [null, null, null],
-    [null, null, null],
-    [null, null, null],
-  ])
+  const [matrix, setMatrix] = useState<IPlayMatrix>(initialMatrix)
 
   const {
     playerSymbol,
@@ -68,9 +82,16 @@ export function GameBoard() {
     setGameStarted,
     isGameStarted,
     score,
+    gameResult,
+    setGameResult,
+    setScore,
   } = useContext(gameContext)
 
-  const updateGameMatrix = (column: number, row: number, symbol: 'x' | 'o') => {
+  const updateGameMatrix = async (
+    column: number,
+    row: number,
+    symbol: 'x' | 'o'
+  ) => {
     const newMatrix: any = [...matrix]
 
     if (newMatrix[row][column] === null || newMatrix[row][column] === 'null') {
@@ -85,11 +106,16 @@ export function GameBoard() {
         playerSymbol
       )
       if (currentPlayerWon && otherPlayerWon) {
+        await sleep(500)
         gameService.gameWin(socketService.socket, 'The Game is a TIE!')
         setGameResult('The Game is a TIE!')
+        setScore({ ...score, tie: score.tie + 1 })
       } else if (currentPlayerWon && !otherPlayerWon) {
+        await sleep(500)
         gameService.gameWin(socketService.socket, 'You Lost!')
         setGameResult('You Won!')
+        const symbol = playerSymbol === 'x' ? 'o' : 'x'
+        setScore({ ...score, [symbol]: score[symbol] + 1 })
       }
 
       setPlayerTurn(false)
@@ -120,6 +146,8 @@ export function GameBoard() {
       gameService.onGameWin(socketService.socket, (message) => {
         setPlayerTurn(false)
         setGameResult(message)
+        const symbol = playerSymbol === 'x' ? 'o' : 'x'
+        setScore({ ...score, [symbol]: score[symbol] + 1 })
       })
   }
 
@@ -129,40 +157,21 @@ export function GameBoard() {
     handleGameWin()
   }, [])
 
-  const onRestartGame = () => {
-    setGameResult('')
-  }
-
   return (
-    <View
-      sx={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#2E2E2E',
-      }}
-    >
+    <Container>
       {(!isGameStarted || !isPlayerTurn) && <PlayStopper />}
       {isGameStarted &&
         (!!gameResult ? (
-          <Title color={gameResult.includes('Lost') ? 'red' : 'green'}>
+          <Title color={gameResult.includes('Lost') ? '$red' : '$green'}>
             {gameResult}
           </Title>
         ) : isPlayerTurn ? (
-          <Title color={'green'}>YOUR TURN</Title>
+          <Title color={'$green'}>YOUR TURN</Title>
         ) : (
-          <Title color={'red'}>OPPONENT TURN</Title>
+          <Title color={'$red'}>OPPONENT TURN</Title>
         ))}
 
-      <View
-        sx={{
-          width: '100%',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginTop: '50px',
-          marginBottom: '50px',
-        }}
-      >
+      <Board>
         {matrix.map((row, rowIdx) => {
           return (
             <RowContainer key={`${rowIdx}-row`}>
@@ -179,9 +188,9 @@ export function GameBoard() {
                 >
                   {column && column !== 'null' ? (
                     column === 'x' ? (
-                      <X>X</X>
+                      <Symbol>X</Symbol>
                     ) : (
-                      <O>O</O>
+                      <Symbol>O</Symbol>
                     )
                   ) : null}
                 </Cell>
@@ -189,41 +198,7 @@ export function GameBoard() {
             </RowContainer>
           )
         })}
-        {!!gameResult && (
-          <View
-            sx={{
-              position: 'absolute',
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-              width: '80%',
-              height: '100%',
-              // zIndex: 99,
-              justifyContent: 'center',
-              alignItems: 'center',
-              alignSelf: 'center',
-            }}
-          >
-            <Pressable
-              sx={{
-                border: '2px solid #fff',
-                padding: '10px',
-                paddingTop: 0,
-                borderRadius: '7px',
-                backgroundColor: '#545454',
-                zIndex: 10,
-              }}
-              onPress={() => onRestartGame()}
-            >
-              <Title>Click To Play Again!</Title>
-            </Pressable>
-          </View>
-        )}
-      </View>
-
-      <View
-        sx={{
-          marginTop: '50px',
-        }}
-      />
+      </Board>
       {isGameStarted ? (
         <Row
           sx={{
@@ -231,30 +206,30 @@ export function GameBoard() {
             justifyContent: 'space-between',
           }}
         >
-          <View sx={{ alignItems: 'center' }}>
+          <CenterView>
             <Title disable={!(isPlayerTurn && playerSymbol === 'x')}>
               PLAYER 1 (x)
             </Title>
             <Title disable={!(isPlayerTurn && playerSymbol === 'x')}>
               {score.o}
             </Title>
-          </View>
-          <View sx={{ alignItems: 'center' }}>
+          </CenterView>
+          <CenterView>
             <Title disable={true}>TIE</Title>
             <Title disable={true}>{score.tie}</Title>
-          </View>
-          <View sx={{ alignItems: 'center' }}>
+          </CenterView>
+          <CenterView>
             <Title disable={!(isPlayerTurn && playerSymbol === 'o')}>
               PLAYER 2 (o)
             </Title>
             <Title disable={!(isPlayerTurn && playerSymbol === 'o')}>
               {score.x}
             </Title>
-          </View>
+          </CenterView>
         </Row>
       ) : (
         <Title>Waiting for Other Player to Join to Start the Game!</Title>
       )}
-    </View>
+    </Container>
   )
 }
